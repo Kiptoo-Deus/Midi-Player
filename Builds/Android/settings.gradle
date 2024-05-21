@@ -1,0 +1,2 @@
+rootProject.name = 'MIDI PLAYER'
+include ':app'
