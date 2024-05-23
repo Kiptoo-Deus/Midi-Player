@@ -11,24 +11,38 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "SoundfontAudioSource.h"
+#include "Fluidlite/include/fluidlite.h"
 
-class MidiFilePlayer : public Timer
-{
+
+
+class MidiFilePlayer : public juce::AudioAppComponent, private juce::Timer {
 public:
-    MidiFilePlayer(const MidiMessageSequence& sequence, SoundfontAudioSource* soundfontSource);
+    MidiFilePlayer();
+    ~MidiFilePlayer() override;
 
-    void start();
-    void pause();
-    void stop();
-    void setPosition(double positionInSeconds);
+    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
+    void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
+    void releaseResources() override;
+
+    void loadSoundFont(const juce::File& sf2File);
+    void loadMidiFile(const juce::File& midiFile);
+    void startPlayback();
+    void stopPlayback();
+    void pausePlayback();
+    void exportToWav(const juce::File& outputFile);
 
 private:
     void timerCallback() override;
 
-    const MidiMessageSequence& midiSequence;
-    SoundfontAudioSource* soundfontSource;
-    double startTime;
-    double pausedTime;
-    bool isPlaying;
+    fluid_settings_t* settings;
+    fluid_synth_t* synth;
+    juce::MidiMessageSequence midiSequence;
+    int currentEventIndex = 0;
+    double playHead = 0.0;
+    bool isPlaying = false;
+    bool isPaused = false;
+
+    void initializeFluidSynth();
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MidiFilePlayer)
 };

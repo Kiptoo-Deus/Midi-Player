@@ -1,48 +1,39 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "SoundfontAudioSource.h"
+
 #include "MidiFilePlayer.h"
 
 //==============================================================================
-class MainComponent : public AudioAppComponent,
-    public ComboBox::Listener,
-    public Button::Listener
-{
+
+#pragma once
+
+#include "JuceHeader.h"
+#include "MidiFilePlayer.h"
+
+#pragma once
+
+#include "JuceHeader.h"
+#include "MidiFilePlayer.h"
+
+class MainComponent : public juce::Component {
 public:
     MainComponent();
-    ~MainComponent();
+    ~MainComponent() override = default;
 
-    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
-    void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) override;
-    void releaseResources() override;
-
-    void paint(Graphics& g) override;
     void resized() override;
 
-    void comboBoxChanged(ComboBox* comboBoxThatWasChanged) override;
-    void buttonClicked(Button* buttonThatWasClicked) override;
-
 private:
-    void loadMidiFile(const File& file);
-    void exportMidiAsWav(const File& midiFile, const File& wavFile);
-    void exportMidiAsWavWithSoundfont(const File& midiFile, const File& soundfontFile, const File& wavFile);
+    void openMidiFile();
+    void openSoundFont();
 
-    File getSoundfontsDirectory() const;
-    File getFileFromName(const String& name) const;
+    juce::TextButton openMidiButton{ "Open MIDI File" };
+    juce::TextButton openSf2Button{ "Open SoundFont File" };
+    juce::TextButton playButton{ "Play" };
+    juce::TextButton pauseButton{ "Pause" };
+    juce::TextButton stopButton{ "Stop" };
 
-    SoundfontAudioSource soundfontPlayer;
-    MidiMessageSequence midiSequence;
-    ScopedPointer<MidiFilePlayer> midiPlayer;
-    Array<File> soundfontFiles;
-    StringArray soundfontNames;
-
-    ScopedPointer<ComboBox> soundfontSelector;
-    ScopedPointer<TextButton> playButton;
-    ScopedPointer<TextButton> pauseButton;
-    ScopedPointer<TextButton> stopButton;
-    ScopedPointer<TextButton> loadMidiButton;
-    ScopedPointer<TextButton> exportWavButton;
+    MidiFilePlayer midiPlayer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

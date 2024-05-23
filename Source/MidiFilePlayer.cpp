@@ -1,50 +1,107 @@
 #include "MidiFilePlayer.h"
 
 //==============================================================================
-MidiFilePlayer::MidiFilePlayer(const MidiMessageSequence& sequence, SoundfontAudioSource* soundfontSource)
-    : midiSequence(sequence), soundfontSource(soundfontSource), startTime(0), pausedTime(0), isPlaying(false)
-{
-    startTimer(1); 
+
+// MidiFilePlayer.cpp
+#include "MidiFilePlayer.h"
+#include "Fluidlite/src/fluidsynth_priv.h"
+
+
+MidiFilePlayer::MidiFilePlayer() {
+    initializeFluidSynth();
+    setAudioChannels(0, 2); // no inputs, stereo output
 }
 
-void MidiFilePlayer::start()
-{
-    if (!isPlaying) {
-        startTime = Time::getMillisecondCounterHiRes() - pausedTime;
-        isPlaying = true;
+MidiFilePlayer::~MidiFilePlayer() {
+    shutdownAudio();
+    delete_fluid_synth(synth);
+    delete_fluid_settings(settings);
+}
+
+void MidiFilePlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
+    fluid_synth_set_sample_rate(synth, sampleRate);
+}
+
+void MidiFilePlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
+    bufferToFill.clearActiveBufferRegion();
+    fluid_synth_write_float(synth, bufferToFill.numSamples,
+        bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample), 0, 1,
+        bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample), 0, 1);
+}
+
+void MidiFilePlayer::releaseResources() {
+    // Clean up resources
+}
+
+void MidiFilePlayer::loadSoundFont(const juce::File& sf2File) {
+    if (fluid_synth_sfload(synth, sf2File.getFullPathName().toRawUTF8(), 1) == FLUID_FAILED) {
+        juce::Logger::writeToLog("Failed to load SoundFont.");
     }
 }
 
-void MidiFilePlayer::pause()
-{
-    if (isPlaying) {
-        pausedTime = Time::getMillisecondCounterHiRes() - startTime;
-        isPlaying = false;
-    }
-}
-
-void MidiFilePlayer::stop()
-{
-    isPlaying = false;
-    pausedTime = 0;
-}
-
-void MidiFilePlayer::setPosition(double positionInSeconds)
-{
-    startTime = Time::getMillisecondCounterHiRes() - positionInSeconds * 1000.0;
-}
-
-void MidiFilePlayer::timerCallback()
-{
-    if (!isPlaying) {
+void MidiFilePlayer::loadMidiFile(const juce::File& midiFile) {
+    juce::FileInputStream midiStream(midiFile);
+    if (!midiStream.openedOk()) {
+        juce::Logger::writeToLog("Failed to open MIDI file.");
         return;
     }
 
-    const double currentTime = (Time::getMillisecondCounterHiRes() - startTime) / 1000.0;
-    for (int i = 0; i < midiSequence.getNumEvents(); ++i) {
-        const MidiMessageSequence::MidiEventHolder* event = midiSequence.getEventPointer(i);
-        if (event->message.getTimeStamp() <= currentTime) {
-            soundfontSource->processMidi(event->message);
-        }
+    juce::MidiFile midi;
+    midi.readFrom(midiStream);
+    midi.convertTimestampTicksToSeconds();
+
+    juce::MidiMessageSequence sequence;
+    for (int i = 0; i < midi.getNumTracks(); ++i) {
+        sequence.addSequence(*midi.getTrack(i), 0.0);
+    }
+
+    midiSequence = sequence;
+    currentEventIndex = 0;
+    playHead = 0.0;
+}
+
+void MidiFilePlayer::startPlayback() {
+    if (!isPlaying || isPaused) {
+        startTimer(10);
+        isPlaying = true;
+        isPaused = false;
     }
 }
+
+void MidiFilePlayer::stopPlayback() {
+    stopTimer();
+    isPlaying = false;
+    isPaused = false;
+    currentEventIndex = 0;
+    playHead = 0.0;
+}
+
+void MidiFilePlayer::pausePlayback() {
+    if (isPlaying && !isPaused) {
+        stopTimer();
+        isPaused = true;
+    }
+}
+
+void MidiFilePlayer::timerCallback() {
+    if (!isPlaying || midiSequence.getNumEvents() == 0)
+        return;
+
+    auto message = midiSequence.getEventPointer(currentEventIndex)->message;
+    if (message.getTimeStamp() <= playHead) {
+        if (message.isNoteOn()) {
+            fluid_synth_noteon(synth, 0, message.getNoteNumber(), message.getVelocity());
+        }
+        else if (message.isNoteOff()) {
+            fluid_synth_noteoff(synth, 0, message.getNoteNumber());
+        }
+        currentEventIndex++;
+    }
+    playHead += 0.01;
+}
+
+void MidiFilePlayer::initializeFluidSynth() {
+    settings = new_fluid_settings();
+    synth = new_fluid_synth(settings);
+}
+

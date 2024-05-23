@@ -1,2 +1,3 @@
 C:\Users\JOEL\Downloads\Compressed\juce-soundfonts-master\juce-soundfonts-master\Builds\VisualStudio2022\x64\Debug\App\MIDI PLAYER.exe
 C:\Users\JOEL\Documents\VST PLUGINS\Hackatone-VST\Builds\VisualStudio2022\x64\Debug\App\MIDI PLAYER.exe
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Builds\VisualStudio2022\x64\Debug\App\MIDI PLAYER.exe

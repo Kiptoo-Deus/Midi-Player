@@ -159,7 +159,6 @@
     <ClCompile Include="..\..\Source\Fluidlite\src\fluid_tuning.c"/>
     <ClCompile Include="..\..\Source\Fluidlite\src\fluid_voice.c"/>
     <ClCompile Include="..\..\Source\Fluidlite\src\fluidsynth.c"/>
-    <ClCompile Include="..\..\Source\SoundfontAudioSource.cpp"/>
     <ClCompile Include="..\..\Source\MainComponent.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
     <ClCompile Include="..\..\Source\MidiFilePlayer.cpp"/>
@@ -2559,7 +2558,6 @@
     <ClInclude Include="..\..\Source\Fluidlite\src\fluid_tuning.h"/>
     <ClInclude Include="..\..\Source\Fluidlite\src\fluid_voice.h"/>
     <ClInclude Include="..\..\Source\Fluidlite\src\fluidsynth_priv.h"/>
-    <ClInclude Include="..\..\Source\SoundfontAudioSource.h"/>
     <ClInclude Include="..\..\Source\MainComponent.h"/>
     <ClInclude Include="..\..\Source\MidiFilePlayer.h"/>
     <ClInclude Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h"/>

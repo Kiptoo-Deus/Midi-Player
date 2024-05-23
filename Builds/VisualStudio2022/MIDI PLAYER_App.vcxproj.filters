@@ -697,9 +697,6 @@
     <ClCompile Include="..\..\Source\Fluidlite\src\fluidsynth.c">
       <Filter>MIDI PLAYER\Source\Fluidlite\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\SoundfontAudioSource.cpp">
-      <Filter>MIDI PLAYER\Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\MainComponent.cpp">
       <Filter>MIDI PLAYER\Source</Filter>
     </ClCompile>
@@ -3347,9 +3344,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Fluidlite\src\fluidsynth_priv.h">
       <Filter>MIDI PLAYER\Source\Fluidlite\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\SoundfontAudioSource.h">
-      <Filter>MIDI PLAYER\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\MainComponent.h">
       <Filter>MIDI PLAYER\Source</Filter>

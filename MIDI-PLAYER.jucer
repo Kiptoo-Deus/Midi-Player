@@ -71,10 +71,6 @@
                 file="Source/Fluidlite/src/fluidsynth_priv.h"/>
         </GROUP>
       </GROUP>
-      <FILE id="HPFDgU" name="SoundfontAudioSource.cpp" compile="1" resource="0"
-            file="Source/SoundfontAudioSource.cpp"/>
-      <FILE id="EQzJMT" name="SoundfontAudioSource.h" compile="0" resource="0"
-            file="Source/SoundfontAudioSource.h"/>
       <FILE id="G445xu" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="e1qD4v" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
