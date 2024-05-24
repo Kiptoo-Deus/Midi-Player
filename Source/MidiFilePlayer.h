@@ -13,8 +13,6 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Fluidlite/include/fluidlite.h"
 
-
-
 class MidiFilePlayer : public juce::AudioAppComponent, private juce::Timer {
 public:
     MidiFilePlayer();
@@ -29,7 +27,7 @@ public:
     void startPlayback();
     void stopPlayback();
     void pausePlayback();
-    void exportToWav(const juce::File& outputFile);
+    void renderToWav(const juce::File& wavFile);
 
 private:
     void timerCallback() override;

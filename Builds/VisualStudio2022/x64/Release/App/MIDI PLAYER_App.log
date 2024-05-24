@@ -1,0 +1,18 @@
+﻿  MidiFilePlayer.cpp
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\MidiFilePlayer.cpp(23,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\MidiFilePlayer.cpp(22,40): warning C4100: 'samplesPerBlockExpected': unreferenced formal parameter
+  Generating code
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_settings.c(254): warning C4701: potentially uninitialized local variable 't' used
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_settings.c(250): warning C4701: potentially uninitialized local variable 'v' used
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_settings.c(250): warning C4703: potentially uninitialized local pointer variable 'v' used
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_settings.c(211): warning C4706: assignment within conditional expression
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(3069): warning C4706: assignment within conditional expression
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(3034): warning C4706: assignment within conditional expression
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_synth.c(2528): warning C4702: unreachable code
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(2902): warning C4701: potentially uninitialized local variable 'genval' used
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(2552): warning C4701: potentially uninitialized local variable 'genval' used
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(2122): warning C4706: assignment within conditional expression
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(1936): warning C4706: assignment within conditional expression
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_defsfont.c(1942): warning C4706: assignment within conditional expression
+  Finished generating code
+  MIDI PLAYER_App.vcxproj -> C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Builds\VisualStudio2022\x64\Release\App\MIDI PLAYER.exe
