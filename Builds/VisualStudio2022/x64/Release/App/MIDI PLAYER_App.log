@@ -1,6 +1,6 @@
 ﻿  MidiFilePlayer.cpp
-C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\MidiFilePlayer.cpp(23,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\MidiFilePlayer.cpp(22,40): warning C4100: 'samplesPerBlockExpected': unreferenced formal parameter
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\MidiFilePlayer.cpp(29,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\MidiFilePlayer.cpp(28,40): warning C4100: 'samplesPerBlockExpected': unreferenced formal parameter
   Generating code
 C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_settings.c(254): warning C4701: potentially uninitialized local variable 't' used
 C:\Users\JOEL\Documents\VST PLUGINS\Midi Player\Source\Fluidlite\src\fluid_settings.c(250): warning C4701: potentially uninitialized local variable 'v' used

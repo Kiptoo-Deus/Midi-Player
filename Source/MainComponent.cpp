@@ -2,9 +2,10 @@
 
 //==============================================================================
 
+#include "MainComponent.h"
 
-
-MainComponent::MainComponent() {
+MainComponent::MainComponent()
+    : midiPlayer(std::make_unique<MidiFilePlayer>()) {
     addAndMakeVisible(openMidiButton);
     addAndMakeVisible(openSf2Button);
     addAndMakeVisible(playButton);
@@ -14,12 +15,13 @@ MainComponent::MainComponent() {
 
     openMidiButton.onClick = [this] { openMidiFile(); };
     openSf2Button.onClick = [this] { openSoundFont(); };
-    playButton.onClick = [this] { midiPlayer.startPlayback(); };
-    pauseButton.onClick = [this] { midiPlayer.pausePlayback(); };
-    stopButton.onClick = [this] { midiPlayer.stopPlayback(); };
+    playButton.onClick = [this] { midiPlayer->startPlayback(); };
+    pauseButton.onClick = [this] { midiPlayer->pausePlayback(); };
+    stopButton.onClick = [this] { midiPlayer->stopPlayback(); };
     renderButton.onClick = [this] { renderToWav(); };
 
     setSize(600, 400);
+    updateRenderButtonState();
 }
 
 void MainComponent::resized() {
@@ -34,20 +36,26 @@ void MainComponent::resized() {
 void MainComponent::openMidiFile() {
     juce::FileChooser chooser("Select a MIDI file...", {}, "*.mid");
     if (chooser.browseForFileToOpen()) {
-        midiPlayer.loadMidiFile(chooser.getResult());
+        midiPlayer->loadMidiFile(chooser.getResult());
+        updateRenderButtonState();
     }
 }
 
 void MainComponent::openSoundFont() {
     juce::FileChooser chooser("Select a SoundFont file...", {}, "*.sf2");
     if (chooser.browseForFileToOpen()) {
-        midiPlayer.loadSoundFont(chooser.getResult());
+        midiPlayer->loadSoundFont(chooser.getResult());
+        updateRenderButtonState();
     }
 }
 
 void MainComponent::renderToWav() {
     juce::FileChooser chooser("Save WAV file as...", {}, "*.wav");
     if (chooser.browseForFileToSave(true)) {
-        midiPlayer.renderToWav(chooser.getResult());
+        midiPlayer->renderToWav(chooser.getResult());
     }
+}
+
+void MainComponent::updateRenderButtonState() {
+    renderButton.setEnabled(midiPlayer->isReadyToRender());
 }
