@@ -12,8 +12,6 @@
 #include "JuceHeader.h"
 #include "MainComponent.h"
 
-
-
 class Application : public juce::JUCEApplication {
 public:
     const juce::String getApplicationName() override { return "MIDI Player"; }
