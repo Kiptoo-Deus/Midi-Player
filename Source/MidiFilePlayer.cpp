@@ -1,17 +1,8 @@
-/*
-  ==============================================================================
-
-    MidiFilePlayer.h
-    Created: 17 May 2024 7:09:53pm
-    Author:  JOEL
-
-  ==============================================================================
-*/
-
-
 #include "MidiFilePlayer.h"
-#include "Fluidlite/src/fluidsynth_priv.h"
 
+#ifndef FLUID_FAILED
+#define FLUID_FAILED (-1)
+#endif
 
 MidiFilePlayer::MidiFilePlayer()
     : settings(new_fluid_settings(), delete_fluid_settings),
@@ -28,6 +19,11 @@ void MidiFilePlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRat
 }
 
 void MidiFilePlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
+    if (!isPlaying || isPaused) {
+        bufferToFill.clearActiveBufferRegion();
+        return;
+    }
+
     bufferToFill.clearActiveBufferRegion();
     fluid_synth_write_float(synth.get(), bufferToFill.numSamples,
         bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample), 0, 1,
@@ -63,105 +59,71 @@ void MidiFilePlayer::loadMidiFile(const juce::File& midiFile) {
     midiSequence = sequence;
     currentEventIndex = 0;
     playHead = 0.0;
+    isPlaying = false;
+    isPaused = false;
+}
+
+void MidiFilePlayer::renderToWav(const juce::File& file)
+{
+    auto outFile = file.createOutputStream();
+
+    if (outFile == nullptr)
+    {
+        DBG("Failed to create output file stream.");
+        return;
+    }
+
+    juce::WavAudioFormat wavFormat;
+    auto audioWriter = std::unique_ptr<juce::AudioFormatWriter>(
+        wavFormat.createWriterFor(outFile.release(),
+                                  44100,
+                                  2,
+                                  16,
+                                  {},
+                                  0)
+    );
+
+    if (audioWriter == nullptr)
+    {
+        DBG("Failed to create WAV writer.");
+        return;
+    }
+
+    juce::AudioSourceChannelInfo info;
+    info.buffer = new juce::AudioBuffer<float>(2, 44100 * 60);  // 1 minute buffer
+    info.startSample = 0;
+    info.numSamples = info.buffer->getNumSamples();
+
+    // Assume renderNextBlock is a method that renders audio into the buffer
+    //renderNextBlock(*info.buffer, 0, info.numSamples);
+
+    audioWriter->writeFromAudioSampleBuffer(*info.buffer, 0, info.numSamples);
+
+    delete info.buffer;  // Clean up the buffer
+}
+
+
+bool MidiFilePlayer::isReadyToRender() const {
+    return midiSequence.getNumEvents() > 0;
 }
 
 void MidiFilePlayer::startPlayback() {
-    if (!isPlaying || isPaused) {
-        startTimer(10);
-        isPlaying = true;
-        isPaused = false;
-    }
+    isPlaying = true;
+    isPaused = false;
+}
+
+void MidiFilePlayer::pausePlayback() {
+    isPaused = true;
 }
 
 void MidiFilePlayer::stopPlayback() {
-    stopTimer();
     isPlaying = false;
     isPaused = false;
     currentEventIndex = 0;
     playHead = 0.0;
 }
 
-void MidiFilePlayer::pausePlayback() {
-    if (isPlaying && !isPaused) {
-        stopTimer();
-        isPaused = true;
-    }
-}
-
-void MidiFilePlayer::timerCallback() {
-    if (!isPlaying || midiSequence.getNumEvents() == 0)
-        return;
-
-    while (currentEventIndex < midiSequence.getNumEvents()) {
-        auto message = midiSequence.getEventPointer(currentEventIndex)->message;
-        if (message.getTimeStamp() > playHead)
-            break;
-
-        if (message.isNoteOn()) {
-            fluid_synth_noteon(synth.get(), 0, message.getNoteNumber(), message.getVelocity());
-        }
-        else if (message.isNoteOff()) {
-            fluid_synth_noteoff(synth.get(), 0, message.getNoteNumber());
-        }
-        currentEventIndex++;
-    }
-
-    playHead += 0.01;
-}
-
 void MidiFilePlayer::initializeFluidSynth(double sampleRate) {
     fluid_synth_set_sample_rate(synth.get(), sampleRate);
 }
 
-void MidiFilePlayer::renderToWav(const juce::File& wavFile) {
-    juce::WavAudioFormat wavFormat;
-    std::shared_ptr<juce::FileOutputStream> fileStream(wavFile.createOutputStream());
-    if (!fileStream || fileStream->failedToOpen()) {
-        juce::Logger::writeToLog("Failed to create output file.");
-        return;
-    }
-
-
-    const double sampleRate = 44100.0;
-    const int bufferSize = 512; // Adjust buffer size as needed
-    juce::AudioBuffer<float> buffer(2, bufferSize);
-    buffer.clear();
-
-    double renderTime = 0.0;
-    currentEventIndex = 0;
-    playHead = 0.0;
-
-    while (currentEventIndex < midiSequence.getNumEvents()) {
-        buffer.clear();
-
-        while (currentEventIndex < midiSequence.getNumEvents()) {
-            auto message = midiSequence.getEventPointer(currentEventIndex)->message;
-            if (message.getTimeStamp() > renderTime)
-                break;
-
-            if (message.isNoteOn()) {
-                fluid_synth_noteon(synth.get(), 0, message.getNoteNumber(), message.getVelocity());
-            }
-            else if (message.isNoteOff()) {
-                fluid_synth_noteoff(synth.get(), 0, message.getNoteNumber());
-            }
-            currentEventIndex++;
-        }
-
-        fluid_synth_write_float(synth.get(), bufferSize,
-            buffer.getWritePointer(0), 0, 1,
-            buffer.getWritePointer(1), 0, 1);
-
-    
-
-        renderTime += static_cast<double>(bufferSize) / sampleRate;
-    }
-
-    //writer->flush();
-    fileStream->flush();
-    juce::Logger::writeToLog("Rendering completed.");
-}
-
-bool MidiFilePlayer::isReadyToRender() const {
-    return midiSequence.getNumEvents() > 0;
-}

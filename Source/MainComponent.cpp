@@ -1,9 +1,5 @@
 #include "MainComponent.h"
 
-//==============================================================================
-
-#include "MainComponent.h"
-
 MainComponent::MainComponent()
     : midiPlayer(std::make_unique<MidiFilePlayer>()) {
     addAndMakeVisible(openMidiButton);
@@ -59,3 +55,4 @@ void MainComponent::renderToWav() {
 void MainComponent::updateRenderButtonState() {
     renderButton.setEnabled(midiPlayer->isReadyToRender());
 }
+
