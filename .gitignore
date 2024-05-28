@@ -65,3 +65,4 @@ profile
 **/Builds/CLion/.idea
 **/doxygen/doc
 **/doxygen/build
+*.pbxproj
