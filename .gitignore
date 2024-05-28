@@ -66,3 +66,8 @@ profile
 **/doxygen/doc
 **/doxygen/build
 *.pbxproj
+/Builds/MacOSX
+/Builds/MacOSX/MIDI PLAYER.xcodeproj
+/Builds
+*.pbxproj
+*.obj
