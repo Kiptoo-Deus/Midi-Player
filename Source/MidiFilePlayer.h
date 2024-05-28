@@ -1,9 +1,23 @@
+/*
+  ==============================================================================
+
+    MidiFilePlayer.h
+    Created: 17 May 2024 7:09:53pm
+    Author:  JOEL
+
+  ==============================================================================
+*/
+
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "Fluidlite/include/fluidlite.h"
 
-class MidiFilePlayer : public juce::AudioAppComponent {
+#include <JuceHeader.h>
+#include "Fluidlite/src/fluidsynth_priv.h"
+
+
+class MidiFilePlayer : public juce::AudioAppComponent,
+    private juce::Timer
+{
 public:
     MidiFilePlayer();
     ~MidiFilePlayer() override;
@@ -14,25 +28,29 @@ public:
 
     void loadSoundFont(const juce::File& sf2File);
     void loadMidiFile(const juce::File& midiFile);
-    void renderToWav(const juce::File& wavFile);
-
-    bool isReadyToRender() const;
 
     void startPlayback();
-    void pausePlayback();
     void stopPlayback();
+    void pausePlayback();
+
+    void exportToWavSilent(const juce::File& outputFile);
+    void startExportToWavInBackground(const juce::File& outputFile);
 
 private:
-    std::unique_ptr<fluid_settings_t, decltype(&delete_fluid_settings)> settings;
-    std::unique_ptr<fluid_synth_t, decltype(&delete_fluid_synth)> synth;
+    void timerCallback() override;
+    void initializeFluidSynth();
+    void muteAudio();
+    void unmuteAudio();
+
+    fluid_settings_t* settings = nullptr;
+    fluid_synth_t* synth = nullptr;
+
     juce::MidiMessageSequence midiSequence;
     int currentEventIndex = 0;
     double playHead = 0.0;
+
     bool isPlaying = false;
     bool isPaused = false;
 
-    void initializeFluidSynth(double sampleRate);
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MidiFilePlayer)
 };
-
