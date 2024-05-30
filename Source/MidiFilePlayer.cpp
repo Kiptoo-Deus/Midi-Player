@@ -17,14 +17,21 @@ MidiFilePlayer::~MidiFilePlayer() {
 
 void MidiFilePlayer::prepareToPlay(int samplesPerBlockExpected, double sampleRate) {
     fluid_synth_set_sample_rate(synth, sampleRate);
+    this->sampleRate = sampleRate;
 }
+
 
 void MidiFilePlayer::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
     bufferToFill.clearActiveBufferRegion();
-    fluid_synth_write_float(synth, bufferToFill.numSamples,
-        bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample), 0, 1,
-        bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample), 0, 1);
+
+    if (isPlaying && !isPaused) {
+        fluid_synth_write_float(synth, bufferToFill.numSamples,
+            bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample), 0, 1,
+            bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample), 0, 1);
+    }
 }
+
+
 
 void MidiFilePlayer::releaseResources() {
     // Clean up resources
@@ -59,38 +66,55 @@ void MidiFilePlayer::loadMidiFile(const juce::File& midiFile) {
 
 void MidiFilePlayer::startPlayback() {
     if (!isPlaying || isPaused) {
-        startTimer(10);
+        startTimerHz(100); // Set the timer to call back 100 times per second
         isPlaying = true;
         isPaused = false;
+        lastTime = juce::Time::getMillisecondCounterHiRes();
     }
 }
 
 void MidiFilePlayer::stopPlayback() {
-    stopTimer();
-    isPlaying = false;
-    isPaused = false;
-    currentEventIndex = 0;
-    playHead = 0.0;
+    if (isPlaying) {
+        stopTimer();
+        isPlaying = false;
+        isPaused = false;
+        currentEventIndex = 0;
+        playHead = 0.0;
+        turnOffAllNotes();
+    }
 }
 
 void MidiFilePlayer::pausePlayback() {
     if (isPlaying && !isPaused) {
         stopTimer();
         isPaused = true;
+        turnOffAllNotes();
     }
 }
+
+void MidiFilePlayer::turnOffAllNotes() {
+    for (int note = 0; note < 128; ++note) {
+        fluid_synth_noteoff(synth, 0, note);
+    }
+}
+
 
 void MidiFilePlayer::timerCallback() {
     if (!isPlaying || midiSequence.getNumEvents() == 0)
         return;
 
-    if (currentEventIndex >= midiSequence.getNumEvents()) {
-        stopPlayback(); // I'm Stopping playback if the end of the sequence is reached
-        return;
-    }
+    double currentTime = juce::Time::getMillisecondCounterHiRes();
+    double timeElapsed = (currentTime - lastTime) / 1000.0; 
+    lastTime = currentTime;
 
-    auto message = midiSequence.getEventPointer(currentEventIndex)->message;
-    if (message.getTimeStamp() <= playHead) {
+    playHead += timeElapsed; 
+
+    while (currentEventIndex < midiSequence.getNumEvents()) {
+        auto message = midiSequence.getEventPointer(currentEventIndex)->message;
+        if (message.getTimeStamp() > playHead) {
+            break;
+        }
+
         if (message.isNoteOn()) {
             fluid_synth_noteon(synth, 0, message.getNoteNumber(), message.getVelocity());
         }
@@ -99,8 +123,13 @@ void MidiFilePlayer::timerCallback() {
         }
         currentEventIndex++;
     }
-    playHead += 0.01;
+
+    if (currentEventIndex >= midiSequence.getNumEvents()) {
+        stopPlayback(); // Stopping playback if the end of the sequence is reached
+    }
 }
+
+
 
 void MidiFilePlayer::initializeFluidSynth() {
     settings = new_fluid_settings();
@@ -129,8 +158,8 @@ void MidiFilePlayer::exportToWavSilent(const juce::File& outputFile) {
     try {
         muteAudio(); // Mute the audio output during rendering
 
-        const double sampleRate = 44100.0; 
-        const int blockSize = 512; 
+        const double sampleRate = this->sampleRate; // Use the class sample rate
+        const int blockSize = 512;
         const int numChannels = 2; // Stereo output
 
         juce::AudioFormatManager formatManager;
@@ -192,6 +221,7 @@ void MidiFilePlayer::exportToWavSilent(const juce::File& outputFile) {
         juce::Logger::writeToLog("Unknown exception during WAV export.");
     }
 }
+
 
 void MidiFilePlayer::startExportToWavInBackground(const juce::File& outputFile) {
     juce::Thread::launch([this, outputFile]() {
